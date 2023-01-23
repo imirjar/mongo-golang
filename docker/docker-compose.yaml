@@ -1,0 +1,9 @@
+services:
+    backend:
+        image: golang
+        expose:
+            - '8080'
+    mongo:
+        image: mongo
+        expose:
+            - '27017:27017'

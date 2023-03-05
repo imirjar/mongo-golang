@@ -1,27 +1,57 @@
 package main
-
+ 
 import (
-    "github.com/julienschmidt/httprouter"
-    "gopkg.in/mgo.v2"
+    
+    "fmt"
+    "github.com/rs/cors"
+    "log"
     "net/http"
 
-    "github.com/imirjar/golang_45_killer_projects/tree/master/mongo-golang/controllers"
+    "github.com/imirjar/mongo-golang/router"
 )
+ 
+
+func main(){
 
 
-func main() {
-    r := httprouter.New()
-    uc := controllers.NewsUserController(getSession())
-    r.GET("/uer/:id", uc.GetUser)
-    r.POST("/user", uc.CreateUser)
-    r.DELETE("/user/:id", uc.DeleteUser)
-    http.ListenAndServe("localhost:8080", r)
-}
+    r := router.Router()
+ 
+    c := cors.New(cors.Options{
+        AllowedOrigins: []string{"http://localhost:8000"},
+        AllowCredentials: true,
+    })
 
-func getSession() *mgo.Session {
-    s, err := mgo.Dial("mongodb://mongo:27107")
-    if err != nil {
-        panic(err)
-    }
-    return s
+    handler := c.Handler(r)
+    // documents = []interface{}{
+    //     bson.D{
+    //         {"rollNo", 153},
+    //         {"maths", 65},
+    //         {"science", 59},
+    //         {"computer", 55},
+    //     },
+    //     bson.D{
+    //         {"rollNo", 162},
+    //         {"maths", 86},
+    //         {"science", 80},
+    //         {"computer", 69},
+    //     },
+    // }
+     
+    // insertOneResult, err := insertOne(client, ctx, "sspkSite", "managers", manager)
+    // insertOneResult, err = insertOne(client, ctx, "sspkSite", "gises", gis)
+    // insertManyResult, err := insertMany(client, ctx, "gfg", "marks", documents)
+     
+    // handle the error
+    // if err != nil {
+    //     panic(err)
+    // }
+     
+    // print the insertion id of the document,
+    // if it is inserted.
+    // fmt.Println("Result of InsertOne")
+    // fmt.Println(insertOneResult.InsertedID)
+    fmt.Println("Starting server on the port 8080...")
+    log.Fatal(http.ListenAndServe(":8080", handler))
+ 
+
 }

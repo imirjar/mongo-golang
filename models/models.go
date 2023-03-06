@@ -34,6 +34,11 @@ type Partners struct {
 }
 
 type Organization struct {
-    Info string `json:"info"`
+    Info          string `json:"info"`
+    Name          string `json:"name"`
+    Full_name     string `json:"full_name"`
+    Contact_phone string `json:"contact_phone"`
+    Support_phone string `json:"support_phone"`
+    Email         string `json:"email"`
 }
 

@@ -2,19 +2,27 @@ package controllers
 
 
 import (
-    "encoding/json"
+    "os"
     "fmt"
     "net/http"
+    "encoding/json"
 
     "go.mongodb.org/mongo-driver/bson"
+    "github.com/joho/godotenv"
 
     // "github.com/gorilla/mux"
     "github.com/imirjar/mongo-golang/mongo"
     "github.com/imirjar/mongo-golang/models"
 )
 
+
 func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
     if err != nil {
         panic(err)
     }
@@ -35,8 +43,12 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ManagersHandler(w http.ResponseWriter, r *http.Request) {
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
 
-    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
     if err != nil {
         panic(err)
     }
@@ -58,7 +70,12 @@ func ManagersHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func SystemsHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
     if err != nil {
         panic(err)
     }
@@ -81,7 +98,11 @@ func SystemsHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func NewsHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
     if err != nil {
         panic(err)
     }
@@ -102,7 +123,12 @@ func NewsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PartnersHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
     if err != nil {
         panic(err)
     }

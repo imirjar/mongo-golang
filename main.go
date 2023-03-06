@@ -6,7 +6,6 @@ import (
     "github.com/rs/cors"
     "log"
     "net/http"
-
     "github.com/imirjar/mongo-golang/router"
 )
  
@@ -17,7 +16,7 @@ func main(){
     r := router.Router()
  
     c := cors.New(cors.Options{
-        AllowedOrigins: []string{"http://localhost:8000"},
+        AllowedOrigins: []string{"http://localhost:3000"},
         AllowCredentials: true,
     })
 

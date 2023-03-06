@@ -6,3 +6,15 @@ services:
     ports:
       - 27017:27017
     command: mongod
+  golang:
+    build: .
+    depends_on:
+      - mongo
+    command: 
+      go run main.go
+    ports:
+      - '8080:8080'
+  nginx:
+    build: nginx
+    ports:
+      - '80:80'

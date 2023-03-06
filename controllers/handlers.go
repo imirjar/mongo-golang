@@ -13,9 +13,30 @@ import (
     "github.com/imirjar/mongo-golang/models"
 )
 
+func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
+    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    if err != nil {
+        panic(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
+
+    cursor, err := mongo.Query(client, ctx, "sspkSite", "organization", bson.D{}, nil)
+    if err != nil {
+        panic(err)
+    }
+    
+    var organizations []models.Organization
+     
+    if err := cursor.All(ctx, &organizations); err != nil {
+         fmt.Println(err)
+    }
+    
+    json.NewEncoder(w).Encode(organizations[0]) 
+}
+
 func ManagersHandler(w http.ResponseWriter, r *http.Request) {
 
-    client, ctx, cancel, err := mongo.Connect("mongodb://localhost:27017")
+    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
     if err != nil {
         panic(err)
     }
@@ -37,13 +58,13 @@ func ManagersHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func SystemsHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://localhost:27017")
+    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
     if err != nil {
         panic(err)
     }
     defer mongo.Close(client, ctx, cancel)
 
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "gises", bson.D{}, nil)
+    cursor, err := mongo.Query(client, ctx, "sspkSite", "systems", bson.D{}, nil)
     if err != nil {
         panic(err)
     }
@@ -60,7 +81,7 @@ func SystemsHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func NewsHandler(w http.ResponseWriter, r *http.Request) {
-    client, ctx, cancel, err := mongo.Connect("mongodb://localhost:27017")
+    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
     if err != nil {
         panic(err)
     }
@@ -80,7 +101,26 @@ func NewsHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(news) 
 }
 
+func PartnersHandler(w http.ResponseWriter, r *http.Request) {
+    client, ctx, cancel, err := mongo.Connect("mongodb://mongo")
+    if err != nil {
+        panic(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
 
+    cursor, err := mongo.Query(client, ctx, "sspkSite", "partners", bson.D{}, nil)
+    if err != nil {
+        panic(err)
+    }
+    
+    var partners []models.Partners
+     
+    if err := cursor.All(ctx, &partners); err != nil {
+         fmt.Println(err)
+    }
+    
+    json.NewEncoder(w).Encode(partners) 
+}
 
 
     // vars := mux.Vars(r)

@@ -12,6 +12,9 @@ func Router() *mux.Router {
 	router.HandleFunc("/managers", controllers.ManagersHandler)
 	router.HandleFunc("/systems", controllers.SystemsHandler)
 	router.HandleFunc("/news", controllers.NewsHandler)
+	router.HandleFunc("/news/{id}", controllers.ArticleHandler)
 	router.HandleFunc("/partners", controllers.PartnersHandler)
+	router.HandleFunc("/documents", controllers.DocumentsHandler)
+	router.HandleFunc("/upload", controllers.UploadFile)
 	return router
 }

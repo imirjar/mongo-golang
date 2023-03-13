@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+    "time"
+    "go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 
 type Manager struct {
@@ -14,11 +17,19 @@ type Manager struct {
     Priority     int32  `json:"priority"`
 }
 
+type File struct {
+    Name    string    `json:"name"`
+    Link    string    `json:"link"`
+    Updated time.Time `json:"updated"`
+}
 
 type News struct {
-    Title   string    `json:"title"`
-    Text    string    `json:"text"`
-    Updated time.Time `json:"updated"`
+    Id      primitive.ObjectID  `json:"id" bson:"_id"`
+    Title   string              `json:"title"`
+    Text    string              `json:"text"`
+    Updated time.Time           `json:"updated"`
+    Files   []File              `json:"files"`
+    Media   []File              `json:"media"`
 }
 
 type System struct {
@@ -27,7 +38,7 @@ type System struct {
     Description string `json:"description"`
 }
 
-type Partners struct {
+type Partner struct {
     Name string `json:"name"`
     Link string `json:"link"`
     Logo string `json:"logo"`
@@ -42,3 +53,14 @@ type Organization struct {
     Email         string `json:"email"`
 }
 
+type DocumentsType struct {
+    Title       string      `json:"title"`
+    Description string      `json:"description"`
+    Documents   []Document  `json:"documents"`
+}
+
+type Document struct {
+    Name    string    `json:"name"`
+    Updated time.Time `json:"updated"`
+    Link    string    `json:"link"`
+}

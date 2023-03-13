@@ -69,7 +69,7 @@ func Ping(client *mongo.Client, ctx context.Context) error{
 // insertOne is a user defined method, used to insert
 // documents into collection returns result of InsertOne
 // and error if any.
-func insertOne(client *mongo.Client, ctx context.Context, dataBase, col string, doc interface{}) (*mongo.InsertOneResult, error) {
+func InsertOne(client *mongo.Client, ctx context.Context, dataBase, col string, doc interface{}) (*mongo.InsertOneResult, error) {
  
     // select database and collection ith Client.Database method
     // and Database.Collection method

@@ -4,6 +4,7 @@ package controllers
 import (
     "os"
     "fmt"
+    // "reflect"
     "net/http"
     "io/ioutil"
     "encoding/json"
@@ -17,6 +18,35 @@ import (
     "go.mongodb.org/mongo-driver/bson/primitive" 
 )
 
+
+type Modeller interface {}
+
+
+//connect to MongoDB and get data by params
+func getData(db string, table string, obj Modeller, bsonV  primitive.M) Modeller {
+
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
+    if err != nil {
+        panic(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
+
+    cursor, err := mongo.Query(client, ctx, db, table, bsonV, nil)
+    if err != nil {
+        panic(err)
+    }
+     
+    if err := cursor.All(ctx, &obj); err != nil {
+         fmt.Println(err)
+    }
+    
+    return obj
+}
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
     
@@ -37,22 +67,6 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
     }
     defer file.Close()
 
-
-//
-    // documents = []interface{}{
-    //     bson.D{
-    //         {"rollNo", 153},
-    //         {"maths", 65},
-    //         {"science", 59},
-    //         {"computer", 55},
-    //     },
-    //     bson.D{
-    //         {"rollNo", 162},
-    //         {"maths", 86},
-    //         {"science", 80},
-    //         {"computer", 69},
-    //     },
-    // }
     err = godotenv.Load(".env")
     if err != nil {
         fmt.Printf("Error while parsing .env file: %v\n", err)
@@ -111,114 +125,26 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "Successfully Uploaded File\n")
 }
 
-
-func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
+func NewsHandler(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case "GET": 
+        var news []models.News
+        obj := getData("sspkSite", "news", news, nil)
+        json.NewEncoder(w).Encode(obj)
     }
-
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "organization", bson.D{}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var organizations []models.Organization
-     
-    if err := cursor.All(ctx, &organizations); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(organizations[0]) 
 }
-
-func ManagersHandler(w http.ResponseWriter, r *http.Request) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
-    }
-
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "managers", bson.D{}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var managers []models.Manager
-     
-    if err := cursor.All(ctx, &managers); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(managers) 
-}
-
 
 func SystemsHandler(w http.ResponseWriter, r *http.Request) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
+    switch r.Method {
+    case "GET": 
+        var systems []models.System
+        obj := getData("sspkSite", "systems", systems, nil)
+        json.NewEncoder(w).Encode(obj)
     }
-
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "systems", bson.D{}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var systems []models.System
-     
-    if err := cursor.All(ctx, &systems); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(systems) 
-
-}
-
-
-func NewsHandler(w http.ResponseWriter, r *http.Request) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
-    }
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "news", bson.D{}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var news []models.News
-     
-    if err := cursor.All(ctx, &news); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(news) 
 }
 
 func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+
     vars := mux.Vars(r)
     propsId := vars["id"]
 
@@ -227,82 +153,49 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
         fmt.Printf("Can't make primirive %v\n", err)
     }
 
-    err = godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
+    switch r.Method {
+    case "GET": 
+        var news []models.News
+        obj := getData("sspkSite", "news", news, bson.M{"_id": artileId})
+        json.NewEncoder(w).Encode(obj)
     }
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "news", bson.M{"_id": artileId}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var news []models.News
-     
-    if err := cursor.All(ctx, &news); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(news[0]) 
 }
 
 func PartnersHandler(w http.ResponseWriter, r *http.Request) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        fmt.Printf("Error while parsing .env file: %v\n", err)
+    switch r.Method {
+    case "GET": 
+        var partners []models.Partner
+        obj := getData("sspkSite", "partners", partners, nil)
+        json.NewEncoder(w).Encode(obj)
     }
-
-    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-    if err != nil {
-        panic(err)
-    }
-    defer mongo.Close(client, ctx, cancel)
-
-    cursor, err := mongo.Query(client, ctx, "sspkSite", "partners", bson.D{}, nil)
-    if err != nil {
-        panic(err)
-    }
-    
-    var partners []models.Partner
-     
-    if err := cursor.All(ctx, &partners); err != nil {
-         fmt.Println(err)
-    }
-    
-    json.NewEncoder(w).Encode(partners) 
 }
 
+func ManagersHandler(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case "GET": 
+        var managers []models.Manager
+        obj := getData("sspkSite", "managers", managers, nil)
+        json.NewEncoder(w).Encode(obj)
+    }
+}
 
 func DocumentsHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method == "GET" {
-        fmt.Println("I'm made of GET!",)
-        err := godotenv.Load(".env")
-        if err != nil {
-            fmt.Printf("Error while parsing .env file: %v\n", err)
-        }
-
-        client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-        if err != nil {
-            panic(err)
-        }
-        defer mongo.Close(client, ctx, cancel)
-
-        cursor, err := mongo.Query(client, ctx, "sspkSite", "documents", bson.D{}, nil)
-        if err != nil {
-            panic(err)
-        }
-        
+    switch r.Method {
+    case "GET": 
+        fmt.Println("GET documents")
         var documents []models.DocumentsType
-         
-        if err := cursor.All(ctx, &documents); err != nil {
-             fmt.Println(err)
-        }
-        
-        json.NewEncoder(w).Encode(documents) 
-    } else {}    
+        obj := getData("sspkSite", "documents", documents, nil)
+        json.NewEncoder(w).Encode(obj)
+    case "POST": 
+        fmt.Println("POST documents",)
+    }
+}
+
+func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case "GET": 
+        var organizations []models.Organization
+        obj := getData("sspkSite", "organization", organizations, nil)
+        json.NewEncoder(w).Encode(obj)
+    }
 }

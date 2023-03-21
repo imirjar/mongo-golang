@@ -7,6 +7,7 @@ import (
 
 
 type Manager struct {
+    Id      primitive.ObjectID  `json:"id" bson:"_id"`
     First_Name   string `json:"first_name"`
     Last_Name    string `json:"last_name"`
     Patronymic   string `json:"patronymic"`
@@ -18,6 +19,7 @@ type Manager struct {
 }
 
 type File struct {
+    Id      primitive.ObjectID  `json:"id" bson:"_id"`
     Name    string    `json:"name"`
     Link    string    `json:"link"`
     Updated time.Time `json:"updated"`
@@ -33,34 +35,39 @@ type News struct {
 }
 
 type System struct {
-    Short_Name  string `json:"short_name"`
-    Name        string `json:"name"`
-    Description string `json:"description"`
+    Id          primitive.ObjectID  `json:"id" bson:"_id"`
+    Short_Name  string              `json:"short_name"`
+    Name        string              `json:"name"`
+    Description string              `json:"description"`
 }
 
 type Partner struct {
-    Name string `json:"name"`
-    Link string `json:"link"`
-    Logo string `json:"logo"`
+    Id      primitive.ObjectID  `json:"id" bson:"_id"`
+    Name string                 `json:"name"`
+    Link string                 `json:"link"`
+    Logo string                 `json:"logo"`
 }
 
 type Organization struct {
-    Info          string `json:"info"`
-    Name          string `json:"name"`
-    Full_name     string `json:"full_name"`
-    Contact_phone string `json:"contact_phone"`
-    Support_phone string `json:"support_phone"`
-    Email         string `json:"email"`
+    Id            primitive.ObjectID  `json:"id" bson:"_id"`
+    Info          string              `json:"info"`
+    Name          string              `json:"name"`
+    Full_name     string              `json:"full_name"`
+    Contact_phone string              `json:"contact_phone"`
+    Support_phone string              `json:"support_phone"`
+    Email         string              `json:"email"`
 }
 
 type DocumentsType struct {
-    Title       string      `json:"title"`
-    Description string      `json:"description"`
-    Documents   []Document  `json:"documents"`
+    Id          primitive.ObjectID  `json:"id" bson:"_id"`
+    Title       string              `json:"title"`
+    Description string              `json:"description"`
+    Documents   []Document          `json:"documents"`
 }
 
 type Document struct {
-    Name    string    `json:"name"`
-    Updated time.Time `json:"updated"`
-    Link    string    `json:"link"`
+    Id          primitive.ObjectID  `json:"id" bson:"_id"`
+    Title       string              `json:"title"`
+    Description string              `json:"description"`
+    Documents   []File              `json:"documents"`
 }

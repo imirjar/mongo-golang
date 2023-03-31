@@ -18,6 +18,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/partners", controllers.PartnersHandler)
 	router.HandleFunc("/document/{id}", controllers.DocumentHandler)
 	router.HandleFunc("/documents", controllers.DocumentsHandler)
-	// router.HandleFunc("/upload", controllers.UploadFile)
+	router.HandleFunc("/upload", controllers.UploadFile)
+	router.HandleFunc("/delete/{collection}/{elementId}", controllers.DeleteFile)
 	return router
 }

@@ -4,11 +4,12 @@ package controllers
 import (
     "os"
     "fmt"
+    // "log"
     "context"
     // "strconv"
     // "reflect"
     "net/http"
-    // "io/ioutil"
+    "io/ioutil"
     "encoding/json"
 
     "go.mongodb.org/mongo-driver/bson"
@@ -74,82 +75,130 @@ func putData(db string, table string, obj Modeller, id  primitive.ObjectID) Mode
 }
 
 
-// func UploadFile(w http.ResponseWriter, r *http.Request) {
+func UploadFile(w http.ResponseWriter, r *http.Request) {
     
 
-//     fmt.Println("File Upload Endpoint Hit")
+    // Parse our multipart form, 10 << 20 specifies a maximum
+    // upload of 10 MB files.
+    r.ParseMultipartForm(10 << 20)
 
-//     // Parse our multipart form, 10 << 20 specifies a maximum
-//     // upload of 10 MB files.
-//     r.ParseMultipartForm(10 << 20)
-//     // FormFile returns the first file for the given key `myFile`
-//     // it also returns the FileHeader so we can get the Filename,
-//     // the Header and the size of the file
-//     file, handler, err := r.FormFile("myFile")
-//     if err != nil {
-//         fmt.Println("Error Retrieving the File")
-//         fmt.Println(err)
-//         return
-//     }
-//     defer file.Close()
+    collection := r.FormValue("collection")
+    // fmt.Println(collection)
+    documentId := r.FormValue("documentId")
+    // fmt.Println(documentId)
+    uploadedFile, handler, err := r.FormFile("file")
+    // fmt.Println(handler)
+    if err != nil {
+        fmt.Println("Error Retrieving the File")
+        fmt.Println(err)
+        return
+    }
 
-//     err = godotenv.Load(".env")
-//     if err != nil {
-//         fmt.Printf("Error while parsing .env file: %v\n", err)
-//     }
+    defer uploadedFile.Close()
 
-//     client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-//     if err != nil {
-//         panic(err)
-//     }
-//     defer mongo.Close(client, ctx, cancel)
+    tempFile, err := ioutil.TempFile("storage/files", "*"+handler.Filename)
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer tempFile.Close()
+    fileBytes, err := ioutil.ReadAll(uploadedFile)
+    if err != nil {
+        fmt.Println(err)
+    }
+    tempFile.Write(fileBytes)
 
+    err = godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
+    }
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
+    if err != nil {
+        panic(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
 
-//     file := models.File{
-//         Name: handler.Filename,
-//         Link : "/document_storage/handler.Filename",
-//     }
-
-//     insertOneResult, err := mongo.InsertOne(client, ctx, "sspkSite", "documents", file)
-//     // insertManyResult, err := insertMany(client, ctx, "gfg", "marks", documents)
-     
-//     // handle the error
-//     if err != nil {
-//         panic(err)
-//     }
-     
-//     // print the insertion id of the document,
-//     // if it is inserted.
-//     fmt.Println("Result of InsertOne")
-//     fmt.Println(insertOneResult.InsertedID)
-
-// //
+    file := models.File{
+        Id:   primitive.NewObjectID(),
+        Name: handler.Filename,
+        Link: tempFile.Name(),
+    }
 
 
+    coll := client.Database("sspkSite").Collection(collection)
+    id, _ := primitive.ObjectIDFromHex(documentId)
+    filter := bson.D{{"_id", id}}
+    update := bson.D{{"$push", bson.D{{"documents", file}}}}
+    result, err := coll.UpdateOne(context.TODO(), filter, update)
+    // fmt.Println(result)
+    if err != nil {
+        panic(err)
+    }
 
-//     fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-//     fmt.Printf("File Size: %+v\n", handler.Size)
-//     fmt.Printf("MIME Header: %+v\n", handler.Header)
+    // fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+    // fmt.Printf("File Size: %+v\n", handler.Size)
+    // fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-//     // Create a temporary file within our temp-images directory that follows
-//     // a particular naming pattern
-//     tempFile, err := ioutil.TempFile("document_storage", "*"+handler.Filename)
-//     if err != nil {
-//         fmt.Println(err)
-//     }
-//     defer tempFile.Close()
+    
+    json.NewEncoder(w).Encode(result)
 
-//     // read all of the contents of our uploaded file into a
-//     // byte array
-//     fileBytes, err := ioutil.ReadAll(file)
-//     if err != nil {
-//         fmt.Println(err)
-//     }
-//     // write this byte array to our temporary file
-//     tempFile.Write(fileBytes)
-//     // return that we have successfully uploaded our file!
-//     fmt.Fprintf(w, "Successfully Uploaded File\n")
-// }
+    // fmt.Fprintf(w, "Successfully Uploaded File\n")
+}
+
+func DeleteFile(w http.ResponseWriter, r *http.Request) {
+    
+    var file models.File
+    err := json.NewDecoder(r.Body).Decode(&file)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    vars := mux.Vars(r)
+    collection := vars["collection"]
+    elementId, err := primitive.ObjectIDFromHex(vars["elementId"])
+    if err != nil {
+        fmt.Printf("Can't make primitive %v\n", err)
+    }
+
+
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
+
+    coll := client.Database("sspkSite").Collection(collection)
+
+    filter := bson.M{
+        "_id": elementId,
+        "documents": bson.M{
+            "$elemMatch": bson.M{
+                "_id": file.Id,
+            },
+        },
+    }
+
+    update := bson.M{
+        "$pull": bson.M{
+            "documents": bson.M{
+                "_id": file.Id,
+            },
+        },
+    }
+
+    result, err := coll.UpdateOne(context.Background(), filter, update)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    err = os.Remove(file.Link)
+    if err != nil {
+        fmt.Println("Ну удалось удалить файл", err)
+    }
+
+    json.NewEncoder(w).Encode(result)
+
+}
 
 func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -294,8 +343,7 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 func DocumentsHandler(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
     case "GET": 
-        fmt.Println("GET documents")
-        var documents []models.DocumentsType
+        var documents []models.Document
         obj := getData("sspkSite", "documents", documents, nil)
         json.NewEncoder(w).Encode(obj)
     case "POST": 

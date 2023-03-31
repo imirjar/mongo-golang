@@ -20,9 +20,9 @@ type Manager struct {
 
 type File struct {
     Id      primitive.ObjectID  `json:"id" bson:"_id"`
-    Name    string    `json:"name"`
-    Link    string    `json:"link"`
-    Updated time.Time `json:"updated"`
+    Name    string              `json:"name"`
+    Link    string              `json:"link"`
+    Updated time.Time           `json:"updated"`
 }
 
 type News struct {
@@ -58,12 +58,6 @@ type Organization struct {
     Email         string              `json:"email"`
 }
 
-type DocumentsType struct {
-    Id          primitive.ObjectID  `json:"id" bson:"_id"`
-    Title       string              `json:"title"`
-    Description string              `json:"description"`
-    Documents   []Document          `json:"documents"`
-}
 
 type Document struct {
     Id          primitive.ObjectID  `json:"id" bson:"_id"`

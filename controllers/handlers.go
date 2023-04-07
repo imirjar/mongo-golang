@@ -341,7 +341,21 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DocumentsHandler(w http.ResponseWriter, r *http.Request) {
+
+    switch r.Method {
+    case "GET": 
+        var documents []models.Document
+        obj := getData("sspkSite", "documents", documents, nil)
+        json.NewEncoder(w).Encode(obj)
+    case "POST": 
+        fmt.Println("POST documents",)
+    }
+
+}
+
+func DocumentsByCategoryHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
+    
     documentsType := vars["type"]
 
     err := godotenv.Load(".env")

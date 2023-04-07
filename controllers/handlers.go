@@ -341,14 +341,37 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DocumentsHandler(w http.ResponseWriter, r *http.Request) {
-    switch r.Method {
-    case "GET": 
-        var documents []models.Document
-        obj := getData("sspkSite", "documents", documents, nil)
-        json.NewEncoder(w).Encode(obj)
-    case "POST": 
-        fmt.Println("POST documents",)
+    vars := mux.Vars(r)
+    documentsType := vars["type"]
+
+    err := godotenv.Load(".env")
+    if err != nil {
+        fmt.Printf("Error while parsing .env file: %v\n", err)
     }
+
+    client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
+    if err != nil {
+        panic(err)
+    }
+    defer mongo.Close(client, ctx, cancel)
+
+    var documents []models.Document
+    filter := bson.D{{"type", documentsType}}
+
+    coll := client.Database("sspkSite").Collection("documents")
+
+    cursor, err := coll.Find(context.TODO(), filter)
+    if err != nil {
+        panic(err)
+    }
+
+    if err = cursor.All(context.TODO(), &documents); err != nil {
+        panic(err)
+    }
+
+
+    json.NewEncoder(w).Encode(documents)
+
 }
 
 func OrganizationHandler(w http.ResponseWriter, r *http.Request) {

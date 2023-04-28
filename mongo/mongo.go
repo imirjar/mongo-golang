@@ -2,109 +2,77 @@ package mongo
 
 import (
 	"context"
-    "time"
-    "fmt"
-	
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
-    "go.mongodb.org/mongo-driver/mongo/readpref"
+	"fmt"
+	"os"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// This is a user defined method to close resources.
-// This method closes mongoDB connection and cancel context.
-func Close(client *mongo.Client, ctx context.Context,
-           cancel context.CancelFunc){
-            
-    // CancelFunc to cancel to context
-    defer cancel()
-     
-    // client provides a method to close
-    // a mongoDB connection.
-    defer func(){
-     
-        // client.Disconnect method also has deadline.
-        // returns error if any,
-        if err := client.Disconnect(ctx); err != nil{
-            panic(err)
-        }
-    }()
-}
- 
-// This is a user defined method that returns mongo.Client,
-// context.Context, context.CancelFunc and error.
-// mongo.Client will be used for further database operation.
-// context.Context will be used set deadlines for process.
-// context.CancelFunc will be used to cancel context and
-// resource associated with it.
- 
-func Connect(uri string)(*mongo.Client, context.Context,
-                          context.CancelFunc, error) {
-                           
-    // ctx will be used to set deadline for process, here
-    // deadline will of 30 seconds.
-    ctx, cancel := context.WithTimeout(context.Background(),
-                                       30 * time.Second)
-     
-    // mongo.Connect return mongo.Client method
-    client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-    return client, ctx, cancel, err
-}
- 
-// This is a user defined method that accepts
-// mongo.Client and context.Context
-// This method used to ping the mongoDB, return error if any.
-func Ping(client *mongo.Client, ctx context.Context) error{
- 
-    // mongo.Client has Ping to ping mongoDB, deadline of
-    // the Ping method will be determined by cxt
-    // Ping method return error if any occurred, then
-    // the error can be handled.
-    if err := client.Ping(ctx, readpref.Primary()); err != nil {
-        return err
-    }
-    fmt.Println("connected successfully")
-    return nil
+type Modeller interface{}
+
+func close(client *mongo.Client, ctx context.Context,
+	cancel context.CancelFunc) {
+	defer cancel()
+
+	defer func() {
+
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
 }
 
-// insertOne is a user defined method, used to insert
-// documents into collection returns result of InsertOne
-// and error if any.
-func InsertOne(client *mongo.Client, ctx context.Context, dataBase, col string, doc interface{}) (*mongo.InsertOneResult, error) {
- 
-    // select database and collection ith Client.Database method
-    // and Database.Collection method
-    collection := client.Database(dataBase).Collection(col)
-     
-    // InsertOne accept two argument of type Context
-    // and of empty interface  
-    result, err := collection.InsertOne(ctx, doc)
-    return result, err
-}
- 
-// insertMany is a user defined method, used to insert
-// documents into collection returns result of
-// InsertMany and error if any.
-func insertMany(client *mongo.Client, ctx context.Context, dataBase, col string, docs []interface{}) (*mongo.InsertManyResult, error) {
- 
-    // select database and collection ith Client.Database
-    // method and Database.Collection method
-    collection := client.Database(dataBase).Collection(col)
-     
-    // InsertMany accept two argument of type Context
-    // and of empty interface  
-    result, err := collection.InsertMany(ctx, docs)
-    return result, err
+func connect(uri string) (*mongo.Client, context.Context,
+	context.CancelFunc, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		30*time.Second)
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	return client, ctx, cancel, err
 }
 
-func Query(client *mongo.Client, ctx context.Context, dataBase, col string, query, field interface{}) (result *mongo.Cursor, err error) {
- 
-    // select database and collection.
-    collection := client.Database(dataBase).Collection(col)
-     
-    // collection has an method Find,
-    // that returns a mongo.cursor
-    // based on query and field.
-    result, err = collection.Find(ctx, query,
-                                  options.Find().SetProjection(field))
-    return
+func GetData(collectionName string, model Modeller, filter primitive.M) Modeller {
+
+	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))
+	if err != nil {
+		panic(err)
+	}
+	defer close(client, ctx, cancel)
+
+	collection := client.Database(os.Getenv("MONGODB_DATABASE")).Collection(collectionName)
+	cursor, err := collection.Find(ctx, filter, options.Find().SetProjection(nil))
+
+	// cursor, err := mongo.Query(client, ctx, db, collectionName, filter, nil)
+	// if err != nil {
+	//     panic(err)
+	// }
+
+	if err := cursor.All(ctx, &model); err != nil {
+		fmt.Println(err)
+	}
+
+	return model
+}
+
+func SetData(db string, collectionName string, obj Modeller, id primitive.ObjectID) Modeller {
+
+	//подключаемся к Mongodb по переменной подключения из env файла
+	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))
+	if err != nil {
+		panic(err)
+	}
+	defer close(client, ctx, cancel)
+
+	coll := client.Database(db).Collection(collectionName)
+	update := bson.D{{"$set", obj}}
+	result, err := coll.UpdateOne(context.TODO(), bson.D{{"_id", id}}, update)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }

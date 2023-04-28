@@ -1,25 +1,26 @@
 package router
 
 import (
-	"github.com/imirjar/mongo-golang/controllers"
 	"github.com/gorilla/mux"
+	"github.com/imirjar/mongo-golang/handlers"
 )
 
 // Router is exported and used in main.go
 func Router() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/organization", controllers.OrganizationHandler)
-	router.HandleFunc("/managers", controllers.ManagersHandler)
-	router.HandleFunc("/manager/{id}", controllers.ManagerHandler)
-	router.HandleFunc("/systems", controllers.SystemsHandler)
-	router.HandleFunc("/system/{id}", controllers.SystemHandler)
-	router.HandleFunc("/news", controllers.NewsHandler)
-	router.HandleFunc("/news/{id}", controllers.ArticleHandler)
-	router.HandleFunc("/partners", controllers.PartnersHandler)
-	router.HandleFunc("/document/{id}", controllers.DocumentHandler)
-	router.HandleFunc("/documents", controllers.DocumentsHandler)
-	router.HandleFunc("/documents/{type}", controllers.DocumentsByCategoryHandler)
-	router.HandleFunc("/upload", controllers.UploadFile)
-	router.HandleFunc("/delete/{collection}/{elementId}", controllers.DeleteFile)
+	router.HandleFunc("/organization", handlers.OrganizationHandler)
+	router.HandleFunc("/managers", handlers.ManagersHandler)
+	router.HandleFunc("/manager/{id}", handlers.ManagerHandler)
+	router.HandleFunc("/systems", handlers.SystemsHandler)
+	router.HandleFunc("/system/{id}", handlers.SystemHandler)
+	router.HandleFunc("/news", handlers.NewsHandler)
+	router.HandleFunc("/news/{id}", handlers.ArticleHandler)
+	router.HandleFunc("/partners", handlers.PartnersHandler)
+	router.HandleFunc("/document/{id}", handlers.DocumentHandler)
+	router.HandleFunc("/documents", handlers.DocumentsHandler)
+	router.HandleFunc("/documents/{type}", handlers.DocumentsByCategoryHandler)
+	router.HandleFunc("/upload", handlers.UploadFile)
+	router.HandleFunc("/delete/{collection}/{elementId}", handlers.DeleteFile)
+	router.HandleFunc("/files", handlers.TestHandler).Methods("POST", "DELETE")
 	return router
 }

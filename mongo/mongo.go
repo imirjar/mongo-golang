@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
+	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -59,7 +59,7 @@ func GetData(collectionName string, model Modeller, filter primitive.M) Modeller
 	return model
 }
 
-func SetData(db string, collectionName string, obj Modeller, id primitive.ObjectID) Modeller {
+func SetData(collectionName string, obj Modeller, filter primitive.M, update primitive.M) Modeller {
 
 	//подключаемся к Mongodb по переменной подключения из env файла
 	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))
@@ -68,9 +68,9 @@ func SetData(db string, collectionName string, obj Modeller, id primitive.Object
 	}
 	defer close(client, ctx, cancel)
 
-	coll := client.Database(db).Collection(collectionName)
-	update := bson.D{{"$set", obj}}
-	result, err := coll.UpdateOne(context.TODO(), bson.D{{"_id", id}}, update)
+	coll := client.Database(os.Getenv("MONGODB_DATABASE")).Collection(collectionName)
+
+	result, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		panic(err)
 	}

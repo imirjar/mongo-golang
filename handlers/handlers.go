@@ -9,8 +9,10 @@ import (
 	// "strconv"
 	// "reflect"
 	"encoding/json"
-	// "io/ioutil"
+	"io/ioutil"
 	"net/http"
+
+	// "path/filepath"
 
 	// "github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,36 +24,32 @@ import (
 )
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
+
 	// // Parse our multipart form, 10 << 20 specifies a maximum
 	// // upload of 10 MB files.
-	// r.ParseMultipartForm(10 << 20)
-	// collection := r.FormValue("collection")
-	// // fmt.Println(collection)
-	// documentId := r.FormValue("documentId")
-	// // fmt.Println(documentId)
-	// uploadedFile, handler, err := r.FormFile("file")
-	// // fmt.Println(handler)
-	// if err != nil {
-	// 	fmt.Println("Error Retrieving the File")
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// defer uploadedFile.Close()
-	// tempFile, err := ioutil.TempFile("storage/files", "*"+handler.Filename)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer tempFile.Close()
-	// fileBytes, err := ioutil.ReadAll(uploadedFile)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// tempFile.Write(fileBytes)
+	r.ParseMultipartForm(10 << 20)
+	uploadedFile, handler, err := r.FormFile("file")
+	if err != nil {
+		fmt.Println("Error Retrieving the File", err)
+		return
+	}
 
-	// err = godotenv.Load(".env")
-	// if err != nil {
-	// 	fmt.Printf("Error while parsing .env file: %v\n", err)
-	// }
+	defer uploadedFile.Close()
+
+	tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tempFile.Close()
+
+	fileBytes, err := ioutil.ReadAll(uploadedFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+	tempFile.Write(fileBytes)
+
+	json.NewEncoder(w).Encode(tempFile.Name())
+
 	// client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
 	// if err != nil {
 	// 	panic(err)
@@ -155,7 +153,9 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		obj := mongo.SetData("sspkSite", "news", news, news.Id)
+		update := bson.M{"$set": news}
+		filter := bson.M{"_id": news.Id}
+		obj := mongo.SetData("news", news, filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -190,7 +190,9 @@ func SystemHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		obj := mongo.SetData("sspkSite", "systems", system, system.Id)
+		update := bson.M{"$set": system}
+		filter := bson.M{"_id": system.Id}
+		obj := mongo.SetData("systems", system, filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -234,7 +236,9 @@ func ManagerHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		obj := mongo.SetData("sspkSite", "managers", manager, manager.Id)
+		update := bson.M{"$set": manager}
+		filter := bson.M{"_id": manager.Id}
+		obj := mongo.SetData("managers", manager, filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -269,7 +273,9 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		obj := mongo.SetData("sspkSite", "documents", document, document.Id)
+		update := bson.M{"$set": document}
+		filter := bson.M{"_id": document.Id}
+		obj := mongo.SetData("documents", document, filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -334,29 +340,27 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		obj := mongo.SetData("sspkSite", "organization", organization, organization.Id)
+
+		update := bson.M{"$set": organization}
+		filter := bson.M{"_id": organization.Id}
+		obj := mongo.SetData("organization", organization, filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
 
-func TestHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	filter := bson.M{
-		"_id": "asdasdasd",
-		"documents": bson.M{
-			"$elemMatch": bson.M{
-				"_id": "asdasdasd",
-			},
-		},
+func FilesHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		var systems []models.System
+		obj := mongo.GetData("systems", systems, nil)
+		json.NewEncoder(w).Encode(obj)
+	case "POST":
+		var systems []models.System
+		obj := mongo.GetData("systems", systems, nil)
+		json.NewEncoder(w).Encode(obj)
+	case "DELETE":
+		var systems []models.System
+		obj := mongo.GetData("systems", systems, nil)
+		json.NewEncoder(w).Encode(obj)
 	}
-	update := bson.M{"foo": "bar", "foos": "bars"}
-	conn := models.MongoConnection{
-		Database:   vars["db"],
-		Collection: vars["collection"],
-		Filter:     filter,
-		Update:     update,
-	}
-	response := fmt.Sprintf("Connection %s", conn)
-	fmt.Fprint(w, response)
-
 }

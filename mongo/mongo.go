@@ -14,8 +14,7 @@ import (
 
 type Modeller interface{}
 
-func close(client *mongo.Client, ctx context.Context,
-	cancel context.CancelFunc) {
+func close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
 	defer cancel()
 
 	defer func() {
@@ -26,8 +25,7 @@ func close(client *mongo.Client, ctx context.Context,
 	}()
 }
 
-func connect(uri string) (*mongo.Client, context.Context,
-	context.CancelFunc, error) {
+func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(),
 		30*time.Second)

@@ -19,8 +19,6 @@ func Router() *mux.Router {
 	router.HandleFunc("/document/{id}", handlers.DocumentHandler)
 	router.HandleFunc("/documents", handlers.DocumentsHandler)
 	router.HandleFunc("/documents/{type}", handlers.DocumentsByCategoryHandler)
-	router.HandleFunc("/upload", handlers.UploadFile)
-	router.HandleFunc("/delete/{collection}/{elementId}", handlers.DeleteFile)
 	router.HandleFunc("/files", handlers.FilesHandler)
 	return router
 }

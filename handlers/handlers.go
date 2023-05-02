@@ -1,20 +1,12 @@
 package handlers
 
 import (
-	"fmt"
-	// "os"
-
-	// "log"
-	// "context"
-	// "strconv"
-	// "reflect"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
-	// "path/filepath"
-
-	// "github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gorilla/mux"
@@ -22,115 +14,6 @@ import (
 	"github.com/imirjar/mongo-golang/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-func UploadFile(w http.ResponseWriter, r *http.Request) {
-
-	// // Parse our multipart form, 10 << 20 specifies a maximum
-	// // upload of 10 MB files.
-	r.ParseMultipartForm(10 << 20)
-	uploadedFile, handler, err := r.FormFile("file")
-	if err != nil {
-		fmt.Println("Error Retrieving the File", err)
-		return
-	}
-
-	defer uploadedFile.Close()
-
-	tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer tempFile.Close()
-
-	fileBytes, err := ioutil.ReadAll(uploadedFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-	tempFile.Write(fileBytes)
-
-	json.NewEncoder(w).Encode(tempFile.Name())
-
-	// client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer mongo.Close(client, ctx, cancel)
-
-	// file := models.File{
-	// 	Id:   primitive.NewObjectID(),
-	// 	Name: handler.Filename,
-	// 	Link: tempFile.Name(),
-	// }
-
-	// coll := client.Database("sspkSite").Collection(collection)
-	// id, _ := primitive.ObjectIDFromHex(documentId)
-	// filter := bson.D{{"_id", id}}
-	// update := bson.D{{"$push", bson.D{{"documents", file}}}}
-	// result, err := coll.UpdateOne(context.TODO(), filter, update)
-	// // fmt.Println(result)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// // fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	// // fmt.Printf("File Size: %+v\n", handler.Size)
-	// // fmt.Printf("MIME Header: %+v\n", handler.Header)
-	// json.NewEncoder(w).Encode(result)
-	// // fmt.Fprintf(w, "Successfully Uploaded File\n")
-}
-
-func DeleteFile(w http.ResponseWriter, r *http.Request) {
-
-	// var file models.File
-	// err := json.NewDecoder(r.Body).Decode(&file)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// vars := mux.Vars(r)
-	// collection := vars["collection"]
-	// elementId, err := primitive.ObjectIDFromHex(vars["elementId"])
-	// if err != nil {
-	// 	fmt.Printf("Can't make primitive %v\n", err)
-	// }
-
-	// client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer mongo.Close(client, ctx, cancel)
-
-	// coll := client.Database("sspkSite").Collection(collection)
-
-	// filter := bson.M{
-	// 	"_id": elementId,
-	// 	"documents": bson.M{
-	// 		"$elemMatch": bson.M{
-	// 			"_id": file.Id,
-	// 		},
-	// 	},
-	// }
-
-	// update := bson.M{
-	// 	"$pull": bson.M{
-	// 		"documents": bson.M{
-	// 			"_id": file.Id,
-	// 		},
-	// 	},
-	// }
-
-	// result, err := coll.UpdateOne(context.Background(), filter, update)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// err = os.Remove(file.Link)
-	// if err != nil {
-	// 	fmt.Println("Ну удалось удалить файл", err)
-	// }
-
-	// json.NewEncoder(w).Encode(result)
-
-}
 
 func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -292,40 +175,12 @@ func DocumentsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DocumentsByCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// documentsType := vars["type"]
-	// var filter bson.D
-	// if documentsType != "" {
-	// 	filter = bson.D{{"type", documentsType}}
-	// } else {
-	// 	filter = bson.D{{}}
-	// }
-
-	// err := godotenv.Load(".env")
-	// if err != nil {
-	// 	fmt.Printf("Error while parsing .env file: %v\n", err)
-	// }
-
-	// client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGODB_URL"))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer mongo.Close(client, ctx, cancel)
-
-	// var documents []models.Document
-
-	// coll := client.Database("sspkSite").Collection("documents")
-
-	// cursor, err := coll.Find(context.TODO(), filter)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if err = cursor.All(context.TODO(), &documents); err != nil {
-	// 	panic(err)
-	// }
-
-	// json.NewEncoder(w).Encode(documents)
+	vars := mux.Vars(r)
+	docType := vars["type"]
+	var documents []models.Document
+	filter := bson.M{"type": docType}
+	obj := mongo.GetData("documents", documents, filter)
+	json.NewEncoder(w).Encode(obj)
 }
 
 func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
@@ -350,17 +205,41 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
-		var systems []models.System
-		obj := mongo.GetData("systems", systems, nil)
-		json.NewEncoder(w).Encode(obj)
 	case "POST":
-		var systems []models.System
-		obj := mongo.GetData("systems", systems, nil)
-		json.NewEncoder(w).Encode(obj)
+		r.ParseMultipartForm(10 << 20)
+		uploadedFile, handler, err := r.FormFile("file")
+		if err != nil {
+			fmt.Println("Error Retrieving the File", err)
+			return
+		}
+
+		defer uploadedFile.Close()
+
+		tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tempFile.Close()
+
+		fileBytes, err := ioutil.ReadAll(uploadedFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		tempFile.Write(fileBytes)
+
+		json.NewEncoder(w).Encode(tempFile.Name())
 	case "DELETE":
-		var systems []models.System
-		obj := mongo.GetData("systems", systems, nil)
-		json.NewEncoder(w).Encode(obj)
+
+		var file models.File
+		err := json.NewDecoder(r.Body).Decode(&file)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Println(file.Link)
+		err = os.Remove(file.Link)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }

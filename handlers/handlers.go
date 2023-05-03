@@ -38,7 +38,7 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		update := bson.M{"$set": news}
 		filter := bson.M{"_id": news.Id}
-		obj := mongo.SetData("news", news, filter, update)
+		obj := mongo.SetData("news", filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -75,7 +75,7 @@ func SystemHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		update := bson.M{"$set": system}
 		filter := bson.M{"_id": system.Id}
-		obj := mongo.SetData("systems", system, filter, update)
+		obj := mongo.SetData("systems", filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -121,7 +121,7 @@ func ManagerHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		update := bson.M{"$set": manager}
 		filter := bson.M{"_id": manager.Id}
-		obj := mongo.SetData("managers", manager, filter, update)
+		obj := mongo.SetData("managers", filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
@@ -158,8 +158,37 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		update := bson.M{"$set": document}
 		filter := bson.M{"_id": document.Id}
-		obj := mongo.SetData("documents", document, filter, update)
+		obj := mongo.SetData("documents", filter, update)
 		json.NewEncoder(w).Encode(obj)
+	case "PATCH":
+		var file models.File
+
+		err := json.NewDecoder(r.Body).Decode(&file)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": documentId}
+		update := bson.M{"$push": bson.M{"documents": file}}
+
+		// fmt.Println(document, filter, update)
+		obj := mongo.SetData("documents", filter, update)
+		json.NewEncoder(w).Encode(obj)
+	case "DELETE":
+		var document models.Document
+		var file models.File
+
+		err := json.NewDecoder(r.Body).Decode(&file)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": documentId}
+		update := bson.M{"$pop": bson.M{"documents": file}}
+
+		fmt.Println(document, filter, update)
+		// obj := mongo.SetData("documents", document, filter, update)
+		// json.NewEncoder(w).Encode(obj)
 	}
 }
 
@@ -198,45 +227,72 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 
 		update := bson.M{"$set": organization}
 		filter := bson.M{"_id": organization.Id}
-		obj := mongo.SetData("organization", organization, filter, update)
+		obj := mongo.SetData("organization", filter, update)
 		json.NewEncoder(w).Encode(obj)
 	}
 }
 
+// form-data handler
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	// collectionName := vars["collection"]
+	// collectionId, err := primitive.ObjectIDFromHex(vars["id"])
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	switch r.Method {
 	case "POST":
+		//adding file to storage
 		r.ParseMultipartForm(10 << 20)
 		uploadedFile, handler, err := r.FormFile("file")
 		if err != nil {
 			fmt.Println("Error Retrieving the File", err)
 			return
 		}
+		collectionName := r.FormValue("collectionName")
+		collectionId, err := primitive.ObjectIDFromHex(r.FormValue("collectionId"))
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		defer uploadedFile.Close()
 
 		tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error Retrieving the File", err)
 		}
 		defer tempFile.Close()
 
 		fileBytes, err := ioutil.ReadAll(uploadedFile)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error Retrieving the File", err)
 		}
 		tempFile.Write(fileBytes)
 
-		json.NewEncoder(w).Encode(tempFile.Name())
-	case "DELETE":
+		//adding file to collection
+		file := models.File{
+			Id:   primitive.NewObjectID(),
+			Name: handler.Filename,
+			Link: "storage/" + handler.Filename,
+		}
 
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": collectionId}
+		update := bson.M{"$push": bson.M{"files": file}}
+
+		obj := mongo.SetData(collectionName, filter, update)
+		json.NewEncoder(w).Encode(obj)
+
+	case "DELETE":
 		var file models.File
 		err := json.NewDecoder(r.Body).Decode(&file)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		fmt.Println(file.Link)
 		err = os.Remove(file.Link)
 		if err != nil {
 			fmt.Println(err)

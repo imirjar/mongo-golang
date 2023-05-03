@@ -57,7 +57,7 @@ func GetData(collectionName string, model Modeller, filter primitive.M) Modeller
 	return model
 }
 
-func SetData(collectionName string, obj Modeller, filter primitive.M, update primitive.M) Modeller {
+func SetData(collectionName string, filter primitive.M, update primitive.M) Modeller {
 
 	//подключаемся к Mongodb по переменной подключения из env файла
 	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))

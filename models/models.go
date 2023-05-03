@@ -70,5 +70,5 @@ type Document struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id"`
 	Title       string             `json:"title"`
 	Description string             `json:"description"`
-	Documents   []File             `json:"documents"`
+	Files       []File             `json:"files"`
 }

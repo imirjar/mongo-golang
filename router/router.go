@@ -19,6 +19,6 @@ func Router() *mux.Router {
 	router.HandleFunc("/document/{id}", handlers.DocumentHandler)
 	router.HandleFunc("/documents", handlers.DocumentsHandler)
 	router.HandleFunc("/documents/{type}", handlers.DocumentsByCategoryHandler)
-	router.HandleFunc("/files", handlers.FilesHandler)
+	router.HandleFunc("/files", handlers.FilesHandler) //form-data handler
 	return router
 }

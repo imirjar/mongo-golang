@@ -234,12 +234,6 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 
 // form-data handler
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// collectionName := vars["collection"]
-	// collectionId, err := primitive.ObjectIDFromHex(vars["id"])
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
 	switch r.Method {
 	case "POST":
 		//adding file to storage
@@ -273,7 +267,7 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		file := models.File{
 			Id:   primitive.NewObjectID(),
 			Name: handler.Filename,
-			Link: "storage/" + handler.Filename,
+			Link: tempFile.Name(),
 		}
 
 		if err != nil {
@@ -287,15 +281,45 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(obj)
 
 	case "DELETE":
-		var file models.File
-		err := json.NewDecoder(r.Body).Decode(&file)
+		documentId, err := primitive.ObjectIDFromHex(r.FormValue("documentId"))
+		if err != nil {
+			fmt.Println("Не удалось получить ID документа коллекции", err)
+		}
+		fileId, err := primitive.ObjectIDFromHex(r.FormValue("fileId"))
+		if err != nil {
+			fmt.Println("Не удалось получить ID файла", err)
+		}
+		fileLink := r.FormValue("fileLink")
+		collectionName := r.FormValue("collectionName")
+
+		//remove file from collection
+
+		filter := bson.M{
+			"_id": documentId,
+			"files": bson.M{
+				"$elemMatch": bson.M{
+					"_id": fileId,
+				},
+			},
+		}
+
+		update := bson.M{
+			"$pull": bson.M{
+				"files": bson.M{
+					"_id": fileId,
+				},
+			},
+		}
+
+		obj := mongo.SetData(collectionName, filter, update)
+		fmt.Println(fileId)
+
+		//remove file from storage
+		err = os.Remove(fileLink)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		err = os.Remove(file.Link)
-		if err != nil {
-			fmt.Println(err)
-		}
+		json.NewEncoder(w).Encode(obj)
 	}
 }

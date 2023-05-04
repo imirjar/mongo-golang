@@ -3,13 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gorilla/mux"
+	"github.com/imirjar/mongo-golang/cmd"
 	"github.com/imirjar/mongo-golang/models"
 	"github.com/imirjar/mongo-golang/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -236,40 +236,10 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		//adding file to storage
-		r.ParseMultipartForm(10 << 20)
-		uploadedFile, handler, err := r.FormFile("file")
-		if err != nil {
-			fmt.Println("Error Retrieving the File", err)
-			return
-		}
+		file := cmd.SaveUploadedFileToStorage(r)
+
 		collectionName := r.FormValue("collectionName")
 		collectionId, err := primitive.ObjectIDFromHex(r.FormValue("collectionId"))
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		defer uploadedFile.Close()
-
-		tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
-		if err != nil {
-			fmt.Println("Error Retrieving the File", err)
-		}
-		defer tempFile.Close()
-
-		fileBytes, err := ioutil.ReadAll(uploadedFile)
-		if err != nil {
-			fmt.Println("Error Retrieving the File", err)
-		}
-		tempFile.Write(fileBytes)
-
-		//adding file to collection
-		file := models.File{
-			Id:   primitive.NewObjectID(),
-			Name: handler.Filename,
-			Link: tempFile.Name(),
-		}
-
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -302,7 +272,6 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 				},
 			},
 		}
-
 		update := bson.M{
 			"$pull": bson.M{
 				"files": bson.M{

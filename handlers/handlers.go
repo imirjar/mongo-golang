@@ -232,7 +232,6 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// form-data handler
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
@@ -281,7 +280,6 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		obj := mongo.SetData(collectionName, filter, update)
-		fmt.Println(fileId)
 
 		//remove file from storage
 		err = os.Remove(fileLink)

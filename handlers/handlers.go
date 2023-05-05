@@ -246,8 +246,8 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		filter := bson.M{"_id": collectionId}
 		update := bson.M{"$push": bson.M{"files": file}}
 
-		obj := mongo.SetData(collectionName, filter, update)
-		json.NewEncoder(w).Encode(obj)
+		mongo.SetData(collectionName, filter, update)
+		json.NewEncoder(w).Encode(file)
 
 	case "DELETE":
 		documentId, err := primitive.ObjectIDFromHex(r.FormValue("documentId"))

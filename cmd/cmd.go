@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func SaveUploadedFileToStorage(r *http.Request) models.File {
+func SaveUploadedFileToStorage(r *http.Request) (models.File, error) {
 	r.ParseMultipartForm(10 << 20)
 	uploadedFile, handler, err := r.FormFile("file")
 	if err != nil {
@@ -39,7 +39,7 @@ func SaveUploadedFileToStorage(r *http.Request) models.File {
 		Link: tempFile.Name(),
 	}
 
-	return file
+	return file, err
 }
 
 // func DeleteUploadedFile(*http.Request) error {}

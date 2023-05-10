@@ -235,18 +235,23 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		file := cmd.SaveUploadedFileToStorage(r)
-
-		collectionName := r.FormValue("collectionName")
-		collectionId, err := primitive.ObjectIDFromHex(r.FormValue("collectionId"))
+		fmt.Println("aasdasdaqsdasd")
+		file, err := cmd.SaveUploadedFileToStorage(r)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		filter := bson.M{"_id": collectionId}
-		update := bson.M{"$push": bson.M{"files": file}}
+		collectionName := r.FormValue("collectionName")
+		documentId, err := primitive.ObjectIDFromHex(r.FormValue("documentId"))
+		if err != nil {
+			fmt.Println(err)
+		}
 
+		filter := bson.M{"_id": documentId}
+		update := bson.M{"$push": bson.M{"media": file}}
+		fmt.Println(filter, update)
 		mongo.SetData(collectionName, filter, update)
+
 		json.NewEncoder(w).Encode(file)
 
 	case "DELETE":

@@ -235,7 +235,6 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		fmt.Println("aasdasdaqsdasd")
 		file, err := cmd.SaveUploadedFileToStorage(r)
 		if err != nil {
 			fmt.Println(err)
@@ -249,6 +248,24 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 
 		filter := bson.M{"_id": documentId}
 		update := bson.M{"$push": bson.M{"media": file}}
+		fmt.Println(filter, update)
+		mongo.SetData(collectionName, filter, update)
+
+		json.NewEncoder(w).Encode(file)
+	case "PUT":
+		file, err := cmd.SaveUploadedFileToStorage(r)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		collectionName := r.FormValue("collectionName")
+		documentId, err := primitive.ObjectIDFromHex(r.FormValue("documentId"))
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": documentId}
+		update := bson.M{"$set": bson.M{r.FormValue("targetField"): file.Link}}
 		fmt.Println(filter, update)
 		mongo.SetData(collectionName, filter, update)
 

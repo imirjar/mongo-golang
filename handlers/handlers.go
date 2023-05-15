@@ -247,7 +247,7 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		filter := bson.M{"_id": documentId}
-		update := bson.M{"$push": bson.M{"media": file}}
+		update := bson.M{"$push": bson.M{r.FormValue("targetField"): file}}
 		fmt.Println(filter, update)
 		mongo.SetData(collectionName, filter, update)
 
@@ -287,7 +287,7 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 
 		filter := bson.M{
 			"_id": documentId,
-			"files": bson.M{
+			r.FormValue("targetField"): bson.M{
 				"$elemMatch": bson.M{
 					"_id": fileId,
 				},
@@ -295,7 +295,7 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		update := bson.M{
 			"$pull": bson.M{
-				"files": bson.M{
+				r.FormValue("targetField"): bson.M{
 					"_id": fileId,
 				},
 			},

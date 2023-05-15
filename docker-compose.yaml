@@ -14,7 +14,16 @@ services:
       go run main.go
     ports:
       - '8080:8080'
+    volumes:
+      - storage:/go/tmp/src/mongo-golang/storage
   nginx:
     build: nginx
+    depends_on:
+      - golang
+      - mongo
     ports:
       - '80:80'
+    volumes:
+      - storage:/var/html/storage/
+volumes:
+  storage:

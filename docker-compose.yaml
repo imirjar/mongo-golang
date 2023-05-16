@@ -6,8 +6,9 @@ services:
     ports:
       - 27017:27017
     command: mongod
-  golang:
+  backend:
     build: .
+    container_name: backend
     depends_on:
       - mongo
     command: 
@@ -16,14 +17,29 @@ services:
       - '8080:8080'
     volumes:
       - storage:/go/tmp/src/mongo-golang/storage
+  dashboard:
+    build:
+      context: ../sspk_site_admin
+      dockerfile: ../sspk_site_admin/Dockerfile
+    container_name: dashboard
+    volumes:
+      - dashboard:/app/dist
+    depends_on:
+      - backend
   nginx:
     build: nginx
+    container_name: nginx
     depends_on:
-      - golang
+      - backend
+      - dashboard
       - mongo
     ports:
       - '80:80'
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - dashboard:/var/html/dashboard/
       - storage:/var/html/storage/
+  
 volumes:
   storage:
+  dashboard:

@@ -25,6 +25,10 @@ func SaveUploadedFileToStorage(r *http.Request) (models.File, error) {
 	if err != nil {
 		fmt.Println("Error Retrieving the File", err)
 	}
+	err = tempFile.Chmod(0777)
+	if err != nil {
+		fmt.Println(err)
+	}
 	defer tempFile.Close()
 
 	fileBytes, err := ioutil.ReadAll(uploadedFile)

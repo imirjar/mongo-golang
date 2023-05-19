@@ -56,6 +56,12 @@ type Partner struct {
 	Logo string             `json:"logo"`
 }
 
+type Social struct {
+	Id   primitive.ObjectID `json:"id" bson:"_id"`
+	Name string             `json:"name"`
+	Link string             `json:"link"`
+}
+
 type Organization struct {
 	Id            primitive.ObjectID `json:"id" bson:"_id"`
 	Info          string             `json:"info"`
@@ -64,6 +70,8 @@ type Organization struct {
 	Contact_phone string             `json:"contact_phone"`
 	Support_phone string             `json:"support_phone"`
 	Email         string             `json:"email"`
+	Files         []File             `json:"files"`
+	Social        []Social           `json:"social"`
 }
 
 type Document struct {

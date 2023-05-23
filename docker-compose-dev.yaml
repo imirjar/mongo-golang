@@ -1,0 +1,45 @@
+version: “3.8”
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    command: mongod
+  backend:
+    build: .
+    container_name: backend
+    depends_on:
+      - mongo
+    command: 
+      go run main.go
+    ports:
+      - '8080:8080'
+    volumes:
+      - storage:/go/tmp/src/mongo-golang/storage
+  dashboard:
+    build:
+      context: ../sspk_site_admin
+      dockerfile: ../sspk_site_admin/Dockerfile
+    container_name: dashboard
+    volumes:
+      - dashboard:/app/dist
+    depends_on:
+      - backend
+  nginx:
+    build: nginx
+    container_name: nginx
+    depends_on:
+      - backend
+      - dashboard
+      - mongo
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/development/nginx.conf:/etc/nginx/nginx.conf:ro
+      - dashboard:/var/html/dashboard/
+      - storage:/var/html/storage/
+  
+volumes:
+  storage:
+  dashboard:

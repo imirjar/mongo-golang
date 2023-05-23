@@ -21,7 +21,7 @@ func SaveUploadedFileToStorage(r *http.Request) (models.File, error) {
 
 	defer uploadedFile.Close()
 
-	tempFile, err := ioutil.TempFile("storage", "*"+handler.Filename)
+	tempFile, err := ioutil.TempFile("/storage", "*"+handler.Filename)
 	if err != nil {
 		fmt.Println("Error Retrieving the File", err)
 	}

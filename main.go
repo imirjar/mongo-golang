@@ -18,7 +18,7 @@ func main() {
 
 	r := router.Router()
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://0.0.0.0", "http://localhost", "http://127.0.0.1", "http://192.168.198.103/"},
+		AllowedOrigins:   []string{"http://0.0.0.0", "http://localhost", "http://127.0.0.1", "http://192.168.198.103/", "http://nginx"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
 	})

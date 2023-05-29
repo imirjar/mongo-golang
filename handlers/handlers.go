@@ -40,6 +40,14 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		filter := bson.M{"_id": news.Id}
 		obj := mongo.SetData("news", filter, update)
 		json.NewEncoder(w).Encode(obj)
+	case "POST":
+		var news models.News
+		err := json.NewDecoder(r.Body).Decode(&news)
+		if err != nil {
+			fmt.Println(err)
+		}
+		obj := mongo.InsertData("news", news)
+		json.NewEncoder(w).Encode(obj)
 	}
 }
 
@@ -150,6 +158,15 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		var documents []models.Document
 		obj := mongo.GetData("documents", documents, bson.M{"_id": documentId})
 		json.NewEncoder(w).Encode(obj)
+	case "POST":
+		var document models.Document
+		err := json.NewDecoder(r.Body).Decode(&document)
+		document.Id = primitive.NewObjectID()
+		if err != nil {
+			fmt.Println(err)
+		}
+		obj := mongo.InsertData("documents", document)
+		json.NewEncoder(w).Encode(obj)
 	case "PUT":
 		var document models.Document
 		err := json.NewDecoder(r.Body).Decode(&document)
@@ -174,21 +191,6 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		// fmt.Println(document, filter, update)
 		obj := mongo.SetData("documents", filter, update)
 		json.NewEncoder(w).Encode(obj)
-	case "DELETE":
-		var document models.Document
-		var file models.File
-
-		err := json.NewDecoder(r.Body).Decode(&file)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		filter := bson.M{"_id": documentId}
-		update := bson.M{"$pop": bson.M{"documents": file}}
-
-		fmt.Println(document, filter, update)
-		// obj := mongo.SetData("documents", document, filter, update)
-		// json.NewEncoder(w).Encode(obj)
 	}
 }
 

@@ -74,3 +74,21 @@ func SetData(collectionName string, filter primitive.M, update primitive.M) Mode
 	}
 	return result
 }
+
+func InsertData(collectionName string, insert Modeller) Modeller {
+
+	//подключаемся к Mongodb по переменной подключения из env файла
+	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))
+	if err != nil {
+		panic(err)
+	}
+	defer close(client, ctx, cancel)
+
+	coll := client.Database(os.Getenv("MONGODB_DATABASE")).Collection(collectionName)
+
+	result, err := coll.InsertOne(context.TODO(), insert)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}

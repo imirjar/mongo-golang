@@ -191,6 +191,21 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		// fmt.Println(document, filter, update)
 		obj := mongo.SetData("documents", filter, update)
 		json.NewEncoder(w).Encode(obj)
+	case "DELETE":
+		var file models.File
+
+		err := json.NewDecoder(r.Body).Decode(&file)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": documentId}
+		update := bson.M{"$pop": bson.M{"documents": file}}
+
+		// fmt.Println(document, filter, update)
+		obj := mongo.SetData("documents", filter, update)
+		json.NewEncoder(w).Encode(obj)
+
 	}
 }
 

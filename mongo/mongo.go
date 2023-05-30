@@ -92,3 +92,26 @@ func InsertData(collectionName string, insert Modeller) Modeller {
 	}
 	return result
 }
+
+func DeleteData(collectionName string, model Modeller, filter primitive.M) Modeller {
+
+	client, ctx, cancel, err := connect(os.Getenv("MONGODB_URL"))
+	if err != nil {
+		panic(err)
+	}
+	defer close(client, ctx, cancel)
+
+	collection := client.Database(os.Getenv("MONGODB_DATABASE")).Collection(collectionName)
+	cursor, err := collection.Find(ctx, filter, options.Find().SetProjection(nil))
+
+	// cursor, err := mongo.Query(client, ctx, db, collectionName, filter, nil)
+	// if err != nil {
+	//     panic(err)
+	// }
+
+	if err := cursor.All(ctx, &model); err != nil {
+		fmt.Println(err)
+	}
+
+	return model
+}

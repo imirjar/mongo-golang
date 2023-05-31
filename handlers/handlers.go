@@ -154,10 +154,12 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Method {
+	//для получение сведений о конкретном документе
 	case "GET":
 		var documents []models.Document
 		obj := mongo.GetData("documents", documents, bson.M{"_id": documentId})
 		json.NewEncoder(w).Encode(obj)
+	//для создания нового документа
 	case "POST":
 		var document models.Document
 		err := json.NewDecoder(r.Body).Decode(&document)
@@ -167,6 +169,7 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		obj := mongo.InsertData("documents", document)
 		json.NewEncoder(w).Encode(obj)
+	//для изменение сведений существующего документа
 	case "PUT":
 		var document models.Document
 		err := json.NewDecoder(r.Body).Decode(&document)
@@ -177,6 +180,8 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		filter := bson.M{"_id": document.Id}
 		obj := mongo.SetData("documents", filter, update)
 		json.NewEncoder(w).Encode(obj)
+
+	//возможно что не исользуется :)
 	case "PATCH":
 		var file models.File
 
@@ -188,22 +193,21 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		filter := bson.M{"_id": documentId}
 		update := bson.M{"$push": bson.M{"documents": file}}
 
-		// fmt.Println(document, filter, update)
 		obj := mongo.SetData("documents", filter, update)
 		json.NewEncoder(w).Encode(obj)
+	//удаляет документ
 	case "DELETE":
-		var file models.File
+		var document models.Document
 
-		err := json.NewDecoder(r.Body).Decode(&file)
+		err := json.NewDecoder(r.Body).Decode(&document)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		filter := bson.M{"_id": documentId}
-		update := bson.M{"$pop": bson.M{"documents": file}}
 
-		// fmt.Println(document, filter, update)
-		obj := mongo.SetData("documents", filter, update)
+		// ВАЖНО УДАЛИТЬ ВСЕ ФАЙЛЫ КОТОРЫЕ ЕСТЬ В ДОКУМЕНТЕ!
+		obj := mongo.DeleteData("documents", filter)
 		json.NewEncoder(w).Encode(obj)
 
 	}

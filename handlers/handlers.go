@@ -48,6 +48,20 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		obj := mongo.InsertData("news", news)
 		json.NewEncoder(w).Encode(obj)
+	case "DELETE":
+		var news models.News
+
+		err := json.NewDecoder(r.Body).Decode(&news)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filter := bson.M{"_id": artileId}
+
+		// ВАЖНО НО НЕ РЕАЛИЗОВАНО - УДАЛИТЬ ВСЕ ФАЙЛЫ КОТОРЫЕ ЕСТЬ В ДОКУМЕНТЕ!
+		obj := mongo.DeleteData("news", filter)
+		json.NewEncoder(w).Encode(obj)
+
 	}
 }
 
@@ -102,10 +116,10 @@ func SystemHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 		}
 
-		filter := bson.M{"_id": propsId}
+		filter := bson.M{"_id": systemId}
 
 		// ВАЖНО НО НЕ РЕАЛИЗОВАНО - УДАЛИТЬ ВСЕ ФАЙЛЫ КОТОРЫЕ ЕСТЬ В ДОКУМЕНТЕ!
-		obj := mongo.DeleteData("documents", filter)
+		obj := mongo.DeleteData("systems", filter)
 		json.NewEncoder(w).Encode(obj)
 
 	}

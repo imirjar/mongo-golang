@@ -70,7 +70,7 @@ type Organization struct {
 	Contact_phone string             `json:"contact_phone"`
 	Support_phone string             `json:"support_phone"`
 	Email         string             `json:"email"`
-	Files         []File             `json:"files"`
+	Structure     string             `json:"structure"`
 	Social        []Social           `json:"social"`
 }
 

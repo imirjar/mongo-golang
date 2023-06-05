@@ -292,6 +292,7 @@ func OrganizationHandler(w http.ResponseWriter, r *http.Request) {
 
 func FilesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	//for document field like "picture: ['backend/file.jpg', 'backend/file.txt']"
 	case "POST":
 		file, err := cmd.SaveUploadedFileToStorage(r)
 		if err != nil {
@@ -310,6 +311,7 @@ func FilesHandler(w http.ResponseWriter, r *http.Request) {
 		mongo.SetData(collectionName, filter, update)
 
 		json.NewEncoder(w).Encode(file)
+	//for document field like "picture: 'backend/file.jpg'"
 	case "PUT":
 		file, err := cmd.SaveUploadedFileToStorage(r)
 		if err != nil {

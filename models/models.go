@@ -45,7 +45,12 @@ type News struct {
 type System struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id"`
 	Short_Name  string             `json:"short_name"`
-	Name        string             `json:"name"`
+	Full_name   string             `json:"full_name"`
+	Owner       string             `json:"owner"`
+	Purpose     string             `json:"purpose"`
+	Phone       string             `json:"phone"`
+	Email       string             `json:"email"`
+	Schedule    string             `json:"schedule"`
 	Description string             `json:"description"`
 }
 

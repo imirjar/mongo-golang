@@ -14,7 +14,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/systems", handlers.SystemsHandler)
 	router.HandleFunc("/system/{id}", handlers.SystemHandler)
 	router.HandleFunc("/news", handlers.NewsHandler)
-	router.HandleFunc("/news/{id}", handlers.ArticleHandler)
+	router.HandleFunc("/article/{id}", handlers.ArticleHandler)
 	router.HandleFunc("/partners", handlers.PartnersHandler)
 	router.HandleFunc("/document/{id}", handlers.DocumentHandler)
 	router.HandleFunc("/documents", handlers.DocumentsHandler)

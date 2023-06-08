@@ -27,11 +27,11 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		var news []models.News
+		var news []models.Article
 		obj := mongo.GetData("news", news, bson.M{"_id": artileId})
 		json.NewEncoder(w).Encode(obj)
 	case "PUT":
-		var news models.News
+		var news models.Article
 		err := json.NewDecoder(r.Body).Decode(&news)
 		if err != nil {
 			fmt.Println(err)
@@ -41,15 +41,16 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		obj := mongo.SetData("news", filter, update)
 		json.NewEncoder(w).Encode(obj)
 	case "POST":
-		var news models.News
+		var news models.Article
 		err := json.NewDecoder(r.Body).Decode(&news)
+		news.Id = primitive.NewObjectID()
 		if err != nil {
 			fmt.Println(err)
 		}
 		obj := mongo.InsertData("news", news)
 		json.NewEncoder(w).Encode(obj)
 	case "DELETE":
-		var news models.News
+		var news models.Article
 
 		err := json.NewDecoder(r.Body).Decode(&news)
 		if err != nil {
@@ -68,7 +69,7 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 func NewsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		var news []models.News
+		var news []models.Article
 		obj := mongo.GetData("news", news, nil)
 		json.NewEncoder(w).Encode(obj)
 	}

@@ -33,7 +33,7 @@ type File struct {
 	Updated time.Time          `json:"updated"`
 }
 
-type News struct {
+type Article struct {
 	Id      primitive.ObjectID `json:"id" bson:"_id"`
 	Title   string             `json:"title"`
 	Text    string             `json:"text"`

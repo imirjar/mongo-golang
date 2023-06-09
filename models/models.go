@@ -38,8 +38,8 @@ type Article struct {
 	Title   string             `json:"title"`
 	Text    string             `json:"text"`
 	Updated time.Time          `json:"updated"`
-	Files   []File             `json:"files"`
-	Media   []File             `json:"media"`
+	Files   []File             `json:"files" bson:"files"`
+	Media   []File             `json:"media" bson:"media"`
 }
 
 type System struct {

@@ -44,6 +44,8 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		var news models.Article
 		err := json.NewDecoder(r.Body).Decode(&news)
 		news.Id = primitive.NewObjectID()
+		news.Files = make([]models.File, 0)
+		news.Media = make([]models.File, 0)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -202,6 +204,7 @@ func DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		var document models.Document
 		err := json.NewDecoder(r.Body).Decode(&document)
 		document.Id = primitive.NewObjectID()
+		document.Files = make([]models.File, 0)
 		if err != nil {
 			fmt.Println(err)
 		}
